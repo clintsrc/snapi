@@ -1,0 +1,25 @@
+{
+  "name": "snapi",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "npm run build && node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node dist/seeds/index.js"
+  },
+  "keywords": [],
+  "author": "Clint Jones",
+  "license": "ISC",
+  "description": "Read your friends' thoughts, add them to a list and give them your opinion using Express.js, MongoDB, Mongoose ODM.",
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/mongoose": "^5.11.96",
+    "typescript": "^5.7.3"
+  }
+}
