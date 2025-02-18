@@ -1,25 +1,28 @@
 /*
  * Thought model
- * Also specifies the reaction schema
+ *
+ * (Also specifies the reaction subdocument schema)
  *
  */
 import { Schema, Types, model, type Document } from 'mongoose';
 
 // Interfaces
+
+export interface IReaction extends Document {
+  reactionId: Types.ObjectId;
+  reactionBody: string;
+  username: string;
+  createdAt: Date;
+}
 export interface IThought extends Document {
   thoughtText: string;
   username: string;
   createdAt: Date;
-  // Array of reactions (subdocuments)
-  reactions: Array<{
-    reactionId: Types.ObjectId;
-    reactionBody: string;
-    username: string;
-    createdAt: Date;
-  }>;
+  reactions: Array<IReaction>;
 }
 
 // Schemas
+
 // Reaction schema defines the reaction field's subdocument
 const reactionSchema = new Schema(
   {
@@ -64,7 +67,8 @@ const thoughtSchema: Schema<IThought> = new Schema(
       type: String,
       required: true,
     },
-    reactions: [reactionSchema], // Using reaction schema directly as a subdocument array
+    // Use reaction schema directly as a subdocument array
+    reactions: [reactionSchema],
   },
   {
     toJSON: {
