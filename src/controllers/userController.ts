@@ -1,12 +1,4 @@
 /*
-TODO:
-BONUS: Remove a user's associated thoughts when deleted.
-/api/users/:userId/friends/:friendId
-    POST to add a new friend to a user's friend list
-    DELETE to remove a friend from a user's friend list
-*/
-
-/*
  * User Controller API
  *
  * Supports CRUD routes for the mongoose User model
@@ -124,6 +116,7 @@ export const updateUser = async (req: Request, res: Response) => {
  * @param string id
  * @returns string
  */
+// TODO: BONUS: Remove a user's associated thoughts when deleted.
 export const deleteUser = async (req: Request, res: Response) => {
   const { userId } = req.params;
   try {
@@ -147,3 +140,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// TODO /api/users/:userId/friends/:friendId
+//    POST to add a new friend to a user's friend list
+//    DELETE to remove a friend from a user's friend list

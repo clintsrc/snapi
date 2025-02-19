@@ -46,7 +46,9 @@ export const getThoughtById = async (req: Request, res: Response) => {
 
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      throw new Error(`GET getThoughtById: Invalid ObjectId format: ${thoughtId}`);
+      throw new Error(
+        `GET getThoughtById: Invalid ObjectId format: ${thoughtId}`
+      );
     }
 
     const thought = await Thought.findById(thoughtId);
@@ -93,7 +95,9 @@ export const updateThought = async (req: Request, res: Response) => {
   const { thoughtId } = req.params;
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      throw new Error(`PUT updateThought: Invalid ObjectId format: ${thoughtId}`);
+      throw new Error(
+        `PUT updateThought: Invalid ObjectId format: ${thoughtId}`
+      );
     }
 
     const thought = await Thought.findOneAndUpdate(
@@ -126,7 +130,9 @@ export const deleteThought = async (req: Request, res: Response) => {
   const { thoughtId } = req.params;
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      throw new Error(`DELETE deleteThought: Invalid ObjectId format: ${thoughtId}`);
+      throw new Error(
+        `DELETE deleteThought: Invalid ObjectId format: ${thoughtId}`
+      );
     }
 
     const thought = await Thought.findOneAndDelete({ _id: thoughtId });
@@ -145,3 +151,7 @@ export const deleteThought = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// TODO: /api/thoughts/:thoughtId/reactions
+//    POST to create a reaction stored in a single thought's reactions array field
+//    DELETE to pull and remove a reaction by the reaction's reactionId value
