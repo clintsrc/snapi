@@ -14,3 +14,134 @@
     POST to create a reaction stored in a single thought's reactions array field
     DELETE to pull and remove a reaction by the reaction's reactionId value
 */
+
+import { Thought } from '../models/index.js';
+import { Request, Response } from 'express';
+import { ObjectId } from 'mongodb';
+
+/**
+ * GET ALL Thoughts /thoughts
+ * @param _req (for typescript intentionally unused)
+ * @returns an array of Thoughts
+ */
+export const getAllThoughts = async (_req: Request, res: Response) => {
+  try {
+    const thoughts = await Thought.find();
+
+    console.info('GET getAllThoughts called');
+    res.json(thoughts);
+  } catch (error: any) {
+    console.error('ERROR: GET getAllThoughts', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * GET Thought based on id /thoughts:id
+ * @param string id
+ * @returns a single Thought object
+ */
+export const getThoughtById = async (req: Request, res: Response) => {
+  const { thoughtId } = req.params;
+
+  try {
+    if (!ObjectId.isValid(thoughtId)) {
+      throw new Error(`GET getThoughtById: Invalid ObjectId format: ${thoughtId}`);
+    }
+
+    const thought = await Thought.findById(thoughtId);
+
+    if (thought) {
+      console.info('GET getThoughtById called', thoughtId);
+      res.status(200).json(thought);
+    } else {
+      console.info('ERROR: GET getThoughtById NOT FOUND', thoughtId);
+      res.status(404).json({
+        message: 'Thought not found',
+      });
+    }
+  } catch (error: any) {
+    console.error('ERROR: GET getThoughtById', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * POST Create a Thought /thoughts
+ * @param object Thought
+ * @returns create a single Thought object
+ */
+export const createThought = async (req: Request, res: Response) => {
+  try {
+    const thought = await Thought.create(req.body);
+
+    console.info('POST createThought called');
+
+    res.status(200).json(thought);
+  } catch (error: any) {
+    console.error('ERROR: POST createThought', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * PUT Update a Thought based on id /thoughts/:id
+ * @param object id, thoughtId
+ * @returns a single Thought object
+ */
+export const updateThought = async (req: Request, res: Response) => {
+  const { thoughtId } = req.params;
+  try {
+    if (!ObjectId.isValid(thoughtId)) {
+      throw new Error(`PUT updateThought: Invalid ObjectId format: ${thoughtId}`);
+    }
+
+    const thought = await Thought.findOneAndUpdate(
+      { _id: thoughtId }, // filter
+      { $set: req.body },
+      { runValidators: true, new: true } // run validation, return updated record
+    );
+
+    if (thought) {
+      console.info('PUT updateThought called', thoughtId);
+      res.status(200).json(thought);
+    } else {
+      console.info('ERROR: PUT updateThought NOT FOUND', thoughtId);
+      res.status(404).json({
+        message: 'Thought not found',
+      });
+    }
+  } catch (error: any) {
+    console.error('ERROR: PUT updateThought', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * DELETE Thought based on id /thoughts/:id
+ * @param string id
+ * @returns string
+ */
+export const deleteThought = async (req: Request, res: Response) => {
+  const { thoughtId } = req.params;
+  try {
+    if (!ObjectId.isValid(thoughtId)) {
+      throw new Error(`DELETE deleteThought: Invalid ObjectId format: ${thoughtId}`);
+    }
+
+    const thought = await Thought.findOneAndDelete({ _id: thoughtId });
+
+    if (thought) {
+      console.info('DELETE deleteThought called', thoughtId);
+      res.status(200).json({ message: 'Thought deleted' });
+    } else {
+      console.info('DELETE: PUT deleteThought NOT FOUND', thoughtId);
+      res.status(404).json({
+        message: 'Thought not found',
+      });
+    }
+  } catch (error: any) {
+    console.error('ERROR: DELETE deleteThought', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};

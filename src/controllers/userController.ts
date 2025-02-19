@@ -6,20 +6,20 @@ BONUS: Remove a user's associated thoughts when deleted.
     DELETE to remove a friend from a user's friend list
 */
 
-/* 
+/*
  * User Controller API
- * 
+ *
  * Supports CRUD routes for the mongoose User model
- * 
+ *
  * Routes:
  *  /api/users
  *  /api/users/:userId
  *
  */
 
-import { User } from "../models/index.js";
-import { Request, Response } from "express";
-import { ObjectId } from "mongodb";
+import { User } from '../models/index.js';
+import { Request, Response } from 'express';
+import { ObjectId } from 'mongodb';
 
 /**
  * GET ALL Users /users
@@ -30,10 +30,10 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   try {
     const users = await User.find();
 
-    console.info("GET getAllUsers called");
+    console.info('GET getAllUsers called');
     res.json(users);
   } catch (error: any) {
-    console.error("ERROR: GET getAllUsers", error.message);
+    console.error('ERROR: GET getAllUsers', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -54,16 +54,16 @@ export const getUserById = async (req: Request, res: Response) => {
     const user = await User.findById(userId);
 
     if (user) {
-      console.info("GET getUserById called", userId);
+      console.info('GET getUserById called', userId);
       res.status(200).json(user);
     } else {
-      console.info("ERROR: GET getUserById NOT FOUND", userId);
+      console.info('ERROR: GET getUserById NOT FOUND', userId);
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error: any) {
-    console.error("ERROR: GET getUserById", error.message);
+    console.error('ERROR: GET getUserById', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -77,10 +77,11 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const user = await User.create(req.body);
 
-    console.info("POST createUser called");
+    console.info('POST createUser called');
+
     res.status(200).json(user);
   } catch (error: any) {
-    console.error("ERROR: POST createUser", error.message);
+    console.error('ERROR: POST createUser', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -104,16 +105,16 @@ export const updateUser = async (req: Request, res: Response) => {
     );
 
     if (user) {
-      console.info("PUT updateUser called", userId);
+      console.info('PUT updateUser called', userId);
       res.status(200).json(user);
     } else {
-      console.info("ERROR: PUT updateUser NOT FOUND", userId);
+      console.info('ERROR: PUT updateUser NOT FOUND', userId);
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error: any) {
-    console.error("ERROR: PUT updateUser", error.message);
+    console.error('ERROR: PUT updateUser', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -133,16 +134,16 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await User.findOneAndDelete({ _id: userId });
 
     if (user) {
-      console.info("DELETE deleteUser called", userId);
-      res.status(200).json({ message: "User deleted" });
+      console.info('DELETE deleteUser called', userId);
+      res.status(200).json({ message: 'User deleted' });
     } else {
-      console.info("DELETE: PUT deleteUser NOT FOUND", userId);
+      console.info('DELETE: PUT deleteUser NOT FOUND', userId);
       res.status(404).json({
-        message: "User not found",
+        message: 'User not found',
       });
     }
   } catch (error: any) {
-    console.error("ERROR: DELETE deleteUser", error.message);
+    console.error('ERROR: DELETE deleteUser', error.message);
     res.status(500).json({ message: error.message });
   }
 };

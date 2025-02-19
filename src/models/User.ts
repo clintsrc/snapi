@@ -29,10 +29,13 @@ const userSchema: Schema<IUser> = new Schema(
      * [^\s@]+$: Domain (top level): one or more characters (no spaces or @) after "gmail.", e.g.: com, org
      */
     email: {
-        type: String,
-        required: true,
-        unique: true,
-        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please enter a valid email address']
+      type: String,
+      required: true,
+      unique: true,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        'Please enter a valid email address',
+      ],
     },
     thoughts: [
       {
