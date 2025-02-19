@@ -1,19 +1,24 @@
-//
-
 import { Router } from 'express';
 const router = Router();
 import {
-  //   createUser,
+  createThought,
   getAllThoughts,
-  //   getUserById,
-  //   updateUser,
-  //   deleteUser,
+  getThoughtById,
+  updateThought,
+  deleteThought,
 } from '../../controllers/thoughtController.js';
 
-// /api/thought
+// /api/thoughts
 router
   .route('/')
-  // .post(createUser) // Create
+  .post(createThought) // Create
   .get(getAllThoughts); // Read all
+
+// /api/thoughts/:thoughtId
+router
+  .route('/:thoughtId')
+  .get(getThoughtById) // Read single
+  .put(updateThought) // Update
+  .delete(deleteThought); // Delete
 
 export { router as thoughtRouter };
