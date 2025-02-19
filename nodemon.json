@@ -1,0 +1,17 @@
+{
+  "watch": [
+    "src/server.ts",
+    "src/config",
+    "src/controllers",
+    "src/models",
+    "src/routes",
+    "src/seeds",
+    "dist"
+  ],
+  "ext": "ts,json",
+  "ignore": ["node_modules"],
+  "execMap": {
+    "ts": "ts-node"
+  },
+  "delay": "1000"
+}
