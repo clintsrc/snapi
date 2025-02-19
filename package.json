@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "npx tsc",
+    "clean": "rimraf dist",
+    "reset": "npm run clean && npm ci",
     "start": "npm run build && node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "node dist/seeds/index.js"
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/mongoose": "^5.11.96",
+    "rimraf": "^6.0.1",
     "typescript": "^5.7.3"
   }
 }
