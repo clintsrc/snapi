@@ -24,9 +24,9 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
     console.info('GET getAllUsers called');
     res.json(users);
-  } catch (error: any) {
-    console.error('ERROR: GET getAllUsers', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    console.error('ERROR: GET getAllUsers', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -54,9 +54,9 @@ export const getUserById = async (req: Request, res: Response) => {
         message: 'User not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: GET getUserById', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    console.error('ERROR: GET getUserById', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -72,9 +72,9 @@ export const createUser = async (req: Request, res: Response) => {
     console.info('POST createUser called');
 
     res.status(200).json(user);
-  } catch (error: any) {
-    console.error('ERROR: POST createUser', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    console.error('ERROR: POST createUser', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -105,9 +105,9 @@ export const updateUser = async (req: Request, res: Response) => {
         message: 'User not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: PUT updateUser', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    console.error('ERROR: PUT updateUser', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -135,9 +135,9 @@ export const deleteUser = async (req: Request, res: Response) => {
         message: 'User not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: DELETE deleteUser', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    console.error('ERROR: DELETE deleteUser', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 

@@ -30,9 +30,13 @@ export const getAllThoughts = async (_req: Request, res: Response) => {
 
     console.info('GET getAllThoughts called');
     res.json(thoughts);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
     console.error('ERROR: GET getAllThoughts', error.message);
-    res.status(500).json({ message: error.message });
+    } else {
+      console.error('ERROR: GET getAllThoughts', error);
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
   }
 };
 
@@ -62,9 +66,13 @@ export const getThoughtById = async (req: Request, res: Response) => {
         message: 'Thought not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: GET getThoughtById', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('ERROR: GET getThoughtById', error.message);
+    } else {
+      console.error('ERROR: GET getThoughtById', error);
+    }
+    res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
   }
 };
 
@@ -80,9 +88,14 @@ export const createThought = async (req: Request, res: Response) => {
     console.info('POST createThought called');
 
     res.status(200).json(thought);
-  } catch (error: any) {
-    console.error('ERROR: POST createThought', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('ERROR: POST createThought', error.message);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error('ERROR: POST createThought', error);
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
   }
 };
 
@@ -115,9 +128,14 @@ export const updateThought = async (req: Request, res: Response) => {
         message: 'Thought not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: PUT updateThought', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('ERROR: PUT updateThought', error.message);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error('ERROR: PUT updateThought', error);
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
   }
 };
 
@@ -141,14 +159,19 @@ export const deleteThought = async (req: Request, res: Response) => {
       console.info('DELETE deleteThought called', thoughtId);
       res.status(200).json({ message: 'Thought deleted' });
     } else {
-      console.info('DELETE: PUT deleteThought NOT FOUND', thoughtId);
+      console.info('ERROR: DELETE deleteThought NOT FOUND', thoughtId);
       res.status(404).json({
         message: 'Thought not found',
       });
     }
-  } catch (error: any) {
-    console.error('ERROR: DELETE deleteThought', error.message);
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('ERROR: DELETE deleteThought', error.message);
+      res.status(500).json({ message: error.message });
+    } else {
+      console.error('ERROR: DELETE deleteThought', error);
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
   }
 };
 
