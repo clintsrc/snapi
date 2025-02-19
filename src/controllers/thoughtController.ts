@@ -14,3 +14,24 @@
     POST to create a reaction stored in a single thought's reactions array field
     DELETE to pull and remove a reaction by the reaction's reactionId value
 */
+
+import { Thought } from '../models/index.js';
+import { Request, Response } from 'express';
+//import { ObjectId } from 'mongodb';
+
+/**
+ * GET ALL Thouthts /thoughts
+ * @param _req (for typescript intentionally unused)
+ * @returns an array of Thoughts
+ */
+export const getAllThoughts = async (_req: Request, res: Response) => {
+  try {
+    const thoughts = await Thought.find();
+
+    console.info('GET getAllThoughts called');
+    res.json(thoughts);
+  } catch (error: any) {
+    console.error('ERROR: GET getAllThoughts', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
