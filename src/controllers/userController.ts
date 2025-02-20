@@ -84,17 +84,27 @@ export const getUserById = async (
       return;
     }
 
-    const user = await User.findById(userId);
-
-    if (user) {
-      console.info('GET getUserById called', userId);
-      res.status(200).json(user);
-    } else {
-      console.info('ERROR: GET getUserById NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
+    /* The populate calls pull in details of the records, otherwise only the
+      id references would be shown. It's more helpful here (detailed) rather than 
+      in the getAllUsers function (overview) */
+    const user = await User.findById(userId)
+      .populate({
+        path: 'thoughts',
+        model: Thought,
+      })
+      .populate({
+        path: 'friends',
+        model: User,
       });
+
+    if (!user) {
+      console.info('GET getUserById NOT FOUND', userId);
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
+
+    console.info('GET getUserById called', userId);
+    res.status(200).json(user);
   } catch (error: unknown) {
     console.error('ERROR: GET getUserById', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
@@ -271,7 +281,7 @@ export const deleteFriend = async (
 
     if (user) {
       console.info('DELETE deleteFriend called', friendId);
-      res.status(200).json({ message: 'Friend deleted' });
+      res.status(200).json(user)
     } else {
       console.info('DELETE: PUT deleteFriend NOT FOUND', friendId);
       res.status(404).json({
