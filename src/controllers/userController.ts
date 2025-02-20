@@ -10,7 +10,7 @@
  *
  */
 
-import { User } from '../models/index.js';
+import { User, Thought } from '../models/index.js';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
@@ -145,12 +145,12 @@ export const updateUser = async (
  * @param string id
  * @returns string
  */
-// TODO: BONUS: Remove a user's associated thoughts when deleted.
 export const deleteUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { userId } = req.params;
+
   try {
     if (!ObjectId.isValid(userId)) {
       res.status(400).json({
@@ -159,17 +159,20 @@ export const deleteUser = async (
       return;
     }
 
+    // Find the user
     const user = await User.findOneAndDelete({ _id: userId });
 
-    if (user) {
-      console.info('DELETE deleteUser called', userId);
-      res.status(200).json({ message: 'User deleted' });
-    } else {
-      console.info('DELETE: PUT deleteUser NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
-      });
+    if (!user) {
+      console.info('DELETE: DELETE deleteUser NOT FOUND', userId);
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
+
+    // Remove user's associated thoughts when deleted (BONUS)
+    await Thought.deleteMany({ username: user.username });
+
+    console.info('DELETE deleteUser called', userId);
+    res.status(200).json({ message: 'User and associated thoughts deleted' });
   } catch (error: unknown) {
     console.error('ERROR: DELETE deleteUser', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
