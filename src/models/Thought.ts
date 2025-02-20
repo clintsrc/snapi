@@ -24,31 +24,26 @@ export interface IThought extends Document {
 // Schemas
 
 // Reaction schema defines the reaction field's subdocument
-const reactionSchema = new Schema(
-  {
-    reactionId: {
-      type: Schema.Types.ObjectId,
-      default: () => new Types.ObjectId(),
-    },
-    reactionBody: {
-      type: String,
-      required: true,
-      maxlength: 280,
-    },
-    username: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      get: (value: Date) => value,
-    },
+const reactionSchema = new Schema({
+  reactionId: {
+    type: Schema.Types.ObjectId,
+    default: () => new Types.ObjectId(),
   },
-  {
-    _id: false, // we're using reactionId instead of the built-in _id
-  }
-);
+  reactionBody: {
+    type: String,
+    required: true,
+    maxlength: 280,
+  },
+  username: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    get: (value: Date) => value,
+  },
+});
 
 const thoughtSchema: Schema<IThought> = new Schema(
   {
