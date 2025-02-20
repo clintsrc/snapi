@@ -6,12 +6,13 @@
  * Routes:
  *  /api/users
  *  /api/users/:userId
+ *  /api/users/:userId/friends/:friendId
  *
  */
 
 import { User } from '../models/index.js';
 import { Request, Response } from 'express';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
 /**
  * GET ALL Users /users
@@ -78,7 +79,7 @@ export const createUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
+  try { 
     const user = await User.create(req.body);
 
     console.info('POST createUser called');
@@ -110,7 +111,7 @@ export const updateUser = async (
 
     const user = await User.findOneAndUpdate(
       { _id: userId }, // filter
-      { $set: req.body }, //TODO
+      { $set: req.body }, // $set operator updates record with data included in the PUT body
       { runValidators: true, new: true } // run validation, return updated record
     );
 
@@ -165,7 +166,11 @@ export const deleteUser = async (
   }
 };
 
-// /api/users/:userId/friends/:friendId
+
+/* 
+ * Friends routes:
+ *  /api/users/:userId/friends/:friendId
+ */
 
 /**
  * POST Friend based on /users/:userId/friends/:friendId
@@ -173,8 +178,6 @@ export const deleteUser = async (
  * @param string id
  * @returns object User
  */
-// TODO
-//    POST to add a new friend to a user's friend list
 export const addFriend = async (req: Request, res: Response): Promise<void> => {
   const { userId, friendId } = req.params;
 
@@ -203,7 +206,7 @@ export const addFriend = async (req: Request, res: Response): Promise<void> => {
 
     const user = await User.findOneAndUpdate(
       { _id: userId }, // filter
-      { $addToSet: { friends: friendId } }, // TODO
+      { $addToSet: { friends: friendId } }, // $addToSet operator adds a friend to the list but only if it's unique
       { runValidators: true, new: true } // run validation, return updated record
     );
 
@@ -250,7 +253,7 @@ export const deleteFriend = async (
 
     const user = await User.findOneAndUpdate(
       { _id: userId }, // filter
-      { $pull: { friends: friendId } }, // $pull to remove friendId from the friends array
+      { $pull: { friends: friendId } }, // $pull operator removes friendId from the friends array
       { runValidators: true, new: true } // run validation, return updated record
     );
 
