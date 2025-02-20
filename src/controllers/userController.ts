@@ -18,7 +18,10 @@ import { ObjectId } from 'mongodb';
  * @param _req (for typescript intentionally unused)
  * @returns an array of Users
  */
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const users = await User.find();
 
@@ -35,12 +38,18 @@ export const getAllUsers = async (_req: Request, res: Response) => {
  * @param string id
  * @returns a single User object
  */
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { userId } = req.params;
 
   try {
     if (!ObjectId.isValid(userId)) {
-      throw new Error(`GET getUserById: Invalid ObjectId format: ${userId}`);
+      res.status(400).json({
+        message: `GET getUserById: Invalid ObjectId format: ${userId}`,
+      });
+      return;
     }
 
     const user = await User.findById(userId);
@@ -65,7 +74,10 @@ export const getUserById = async (req: Request, res: Response) => {
  * @param object User
  * @returns create a single User object
  */
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = await User.create(req.body);
 
@@ -83,16 +95,22 @@ export const createUser = async (req: Request, res: Response) => {
  * @param object id, userId
  * @returns a single User object
  */
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { userId } = req.params;
   try {
     if (!ObjectId.isValid(userId)) {
-      throw new Error(`PUT updateUser: Invalid ObjectId format: ${userId}`);
+      res.status(400).json({
+        message: `PUT updateUser: Invalid ObjectId format: ${userId}`,
+      });
+      return;
     }
 
     const user = await User.findOneAndUpdate(
       { _id: userId }, // filter
-      { $set: req.body },
+      { $set: req.body }, //TODO
       { runValidators: true, new: true } // run validation, return updated record
     );
 
@@ -117,11 +135,17 @@ export const updateUser = async (req: Request, res: Response) => {
  * @returns string
  */
 // TODO: BONUS: Remove a user's associated thoughts when deleted.
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { userId } = req.params;
   try {
     if (!ObjectId.isValid(userId)) {
-      throw new Error(`DELETE deleteUser: Invalid ObjectId format: ${userId}`);
+      res.status(400).json({
+        message: `DELETE deleteUser: Invalid ObjectId format: ${userId}`,
+      });
+      return;
     }
 
     const user = await User.findOneAndDelete({ _id: userId });
@@ -141,6 +165,106 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// TODO /api/users/:userId/friends/:friendId
+// /api/users/:userId/friends/:friendId
+
+/**
+ * POST Friend based on /users/:userId/friends/:friendId
+ * @param string id
+ * @param string id
+ * @returns object User
+ */
+// TODO
 //    POST to add a new friend to a user's friend list
-//    DELETE to remove a friend from a user's friend list
+export const addFriend = async (req: Request, res: Response): Promise<void> => {
+  const { userId, friendId } = req.params;
+
+  try {
+    if (!ObjectId.isValid(userId)) {
+      res.status(400).json({
+        message: `POST addFriend: Invalid ObjectId format (userId): ${userId}`,
+      });
+      return;
+    }
+
+    if (!ObjectId.isValid(friendId)) {
+      res.status(400).json({
+        message: `POST addFriend: Invalid ObjectId format (friendId): ${friendId}`,
+      });
+      return;
+    }
+
+    if (userId == friendId) {
+      console.error(`POST addFriend: users can't friend themselves`);
+      res.status(422).json({
+        message: 'Unprocessable Entity: users cannot friend themselves',
+      });
+      return;
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId }, // filter
+      { $addToSet: { friends: friendId } }, // TODO
+      { runValidators: true, new: true } // run validation, return updated record
+    );
+
+    if (user) {
+      console.info('POST addFriend called');
+      res.status(200).json(user);
+    } else {
+      console.info('POST: addFriend NOT FOUND', userId);
+      res.status(404).json({
+        message: 'User not found',
+      });
+    }
+  } catch (error: unknown) {
+    console.error('ERROR: POST addFriend', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+/**
+ * DELETE Friend from user's friend list based on /users/:userId/friends/:friendId
+ * @param string id
+ * @param string id
+ * @returns string
+ */
+export const deleteFriend = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { userId, friendId } = req.params;
+  try {
+    if (!ObjectId.isValid(userId)) {
+      res.status(400).json({
+        message: `DELETE deleteFriend: Invalid ObjectId format: ${userId}`,
+      });
+      return;
+    }
+
+    if (!ObjectId.isValid(friendId)) {
+      res.status(400).json({
+        message: `DELETE deleteFriend: Invalid ObjectId format (friendId): ${friendId}`,
+      });
+      return;
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId }, // filter
+      { $pull: { friends: friendId } }, // $pull to remove friendId from the friends array
+      { runValidators: true, new: true } // run validation, return updated record
+    );
+
+    if (user) {
+      console.info('DELETE deleteFriend called', friendId);
+      res.status(200).json({ message: 'Friend deleted' });
+    } else {
+      console.info('DELETE: PUT deleteFriend NOT FOUND', friendId);
+      res.status(404).json({
+        message: 'User not found',
+      });
+    }
+  } catch (error: unknown) {
+    console.error('ERROR: DELETE deleteFriend', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
+  }
+};

@@ -175,6 +175,69 @@ export const deleteThought = async (req: Request, res: Response) => {
   }
 };
 
-// TODO: /api/thoughts/:thoughtId/reactions
+// TODO:
+// /api/thoughts/:thoughtId/reactions
 //    POST to create a reaction stored in a single thought's reactions array field
-//    DELETE to pull and remove a reaction by the reaction's reactionId value
+//    
+/**
+ * POST Reaction based on /thoughts/:thoughtId/reactions
+ * @param string id
+ * @param object reaction
+ * @returns object Thought
+ */
+// export const addReaction = async (req: Request, res: Response) => {
+//   try {
+//     const thought = await Thought.create(req.body);
+
+//     console.info('POST addReaction called');
+
+//     res.status(200).json(thought);
+//   } catch (error: unknown) {
+//     if (error instanceof Error) {
+//       console.error('ERROR: POST addReaction', error.message);
+//       res.status(500).json({ message: error.message });
+//     } else {
+//       console.error('ERROR: POST addReaction', error);
+//       res.status(500).json({ message: 'An unknown error occurred' });
+//     }
+//   }
+// };
+
+// // /api/thoughts/:thoughtId/reactions/:reactionId 
+// //    DELETE to pull and remove a reaction by the reaction's reactionId value
+// //    deleteReaction
+// /**
+//  * DELETE Thought based on id /thoughts/:id
+//  * @param string id
+//  * @returns string
+//  */
+// export const deleteThought = async (req: Request, res: Response) => {
+//   const { thoughtId } = req.params;
+//   try {
+//     if (!ObjectId.isValid(thoughtId)) {
+//       throw new Error(
+//         `DELETE deleteThought: Invalid ObjectId format: ${thoughtId}`
+//       );
+//     }
+
+//     const thought = await Thought.findOneAndDelete({ _id: thoughtId });
+
+//     if (thought) {
+//       console.info('DELETE deleteThought called', thoughtId);
+//       res.status(200).json({ message: 'Thought deleted' });
+//     } else {
+//       console.info('ERROR: DELETE deleteThought NOT FOUND', thoughtId);
+//       res.status(404).json({
+//         message: 'Thought not found',
+//       });
+//     }
+//   } catch (error: unknown) {
+//     if (error instanceof Error) {
+//       console.error('ERROR: DELETE deleteThought', error.message);
+//       res.status(500).json({ message: error.message });
+//     } else {
+//       console.error('ERROR: DELETE deleteThought', error);
+//       res.status(500).json({ message: 'An unknown error occurred' });
+//     }
+//   }
+// };
