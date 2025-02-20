@@ -42,7 +42,7 @@ const reactionSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (value: any) => (value ? value.toISOString() : ''),
+      get: (value: Date) => value,
     },
   },
   {
@@ -61,7 +61,7 @@ const thoughtSchema: Schema<IThought> = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (value: any) => (value ? value.toISOString() : ''),
+      get: (value: Date) => value,
     },
     username: {
       type: String,
