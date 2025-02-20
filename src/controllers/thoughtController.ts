@@ -242,42 +242,50 @@ export const deleteThought = async (
  * @param object reaction
  * @returns object Thought
  */
-export const addReaction = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const addReaction = async (req: Request, res: Response): Promise<void> => {
   const { thoughtId } = req.params;
+  const { reactionBody, username } = req.body;
+
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      res.status(400).json({
-        message: `POST addReaction: Invalid ObjectId format: ${thoughtId}`,
-      });
+      res.status(400).json({ message: `Invalid ObjectId format: ${thoughtId}` });
       return;
     }
-    const thought = await Thought.findOneAndUpdate(
-      { _id: thoughtId }, // filter
-      { $addToSet: { reactions: req.body } }, // $addToSet operator adds a friend to the list but only if it's unique
-      { runValidators: true, new: true } // run validation, return updated record
+
+    // Ensure the user exists
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.status(404).json({ message: `User not found: ${username}` });
+      return;
+    }
+
+    // Find the thought and add the reaction
+    const updatedThought = await Thought.findByIdAndUpdate(
+      thoughtId,
+      {
+        $push: {
+          reactions: {
+            reactionBody,
+            username,
+            createdAt: new Date()
+          }
+        }
+      },
+      { new: true, runValidators: true }
     );
-    if (thought) {
-      console.info('POST addReaction called');
-      res.status(200).json(thought);
-    } else {
-      console.info('POST: addReaction NOT FOUND', thoughtId);
-      res.status(404).json({
-        message: 'Thought not found',
-      });
+
+    if (!updatedThought) {
+      res.status(404).json({ message: 'Thought not found' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('ERROR: POST addReaction', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('ERROR: POST addReaction', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+
+    res.status(200).json(updatedThought);
+  } catch (error) {
+    console.error('ERROR: POST addReaction', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
+
 
 /*
  * Thought reaction routes:
@@ -317,7 +325,7 @@ export const deleteReaction = async (
     );
     if (thought) {
       console.info('DELETE deleteReaction called', reactionId);
-      res.status(200).json({ message: 'Thought deleted' });
+      res.status(200).json(thought);
     } else {
       console.info('ERROR: DELETE deleteReaction NOT FOUND', reactionId);
       res.status(404).json({
