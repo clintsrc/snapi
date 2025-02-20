@@ -14,6 +14,32 @@ import { User } from '../models/index.js';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
+/*
+ * User routes:
+ *  /api/users
+ */
+
+/**
+ * POST Create a User /users
+ * @param object User
+ * @returns create a single User object
+ */
+export const createUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = await User.create(req.body);
+
+    console.info('POST createUser called');
+
+    res.status(200).json(user);
+  } catch (error: unknown) {
+    console.error('ERROR: POST createUser', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+
 /**
  * GET ALL Users /users
  * @param _req (for typescript intentionally unused)
@@ -33,6 +59,11 @@ export const getAllUsers = async (
     res.status(500).json({ message: (error as Error).message });
   }
 };
+
+/*
+ * User routes:
+ *  /api/users/:userId
+ */
 
 /**
  * GET User based on id /users/:id
@@ -66,27 +97,6 @@ export const getUserById = async (
     }
   } catch (error: unknown) {
     console.error('ERROR: GET getUserById', (error as Error).message);
-    res.status(500).json({ message: (error as Error).message });
-  }
-};
-
-/**
- * POST Create a User /users
- * @param object User
- * @returns create a single User object
- */
-export const createUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try { 
-    const user = await User.create(req.body);
-
-    console.info('POST createUser called');
-
-    res.status(200).json(user);
-  } catch (error: unknown) {
-    console.error('ERROR: POST createUser', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
   }
 };
@@ -166,9 +176,8 @@ export const deleteUser = async (
   }
 };
 
-
-/* 
- * Friends routes:
+/*
+ * User Friends routes:
  *  /api/users/:userId/friends/:friendId
  */
 
