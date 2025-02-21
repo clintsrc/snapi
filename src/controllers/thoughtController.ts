@@ -12,14 +12,14 @@
  *
  */
 
+import { User, Thought } from '../models/index.js';
+import { Request, Response } from 'express';
+import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
+
 /*
  * Thought routes:
  *  /api/thoughts
  */
-
-import { User, Thought } from '../models/index.js';
-import { Request, Response } from 'express';
-import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
 /**
  * GET ALL Thoughts /thoughts

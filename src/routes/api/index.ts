@@ -1,4 +1,10 @@
-// /api/users
+/*
+ * Routes index
+ *
+ * Organize and manage the routes
+ * Associates each route with their specific CRUD routes
+ *
+ */
 
 import { Router } from 'express';
 import { userRouter } from './userRoutes.js';

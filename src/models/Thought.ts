@@ -1,9 +1,15 @@
 /*
  * Thought model
  *
- * (Also specifies the reaction subdocument schema)
+ * (Also specifies the *reaction* subdocument schema)
+ *
+ * Defines interfaces, schemas, virtual functions, getters and setters
+ * Compiles the Thought model from the schema
+ *
+ * Uses dayjs library to format the timestamp getter output
  *
  */
+
 import {
   Schema,
   Types,
@@ -48,7 +54,6 @@ const reactionSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    //get: (value: Date) => value,
     get: (value: Date) => dayjs(value).format('YYYY-MMM-DD hh:mm:ss A'),
   },
 });
