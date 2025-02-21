@@ -1,5 +1,12 @@
+/*
+ * User Routes
+ *
+ * Organize and manage the User routes
+ * Associates each supported CRUD route with the supporting controller function
+ *
+ */
+
 import { Router } from 'express';
-const router = Router();
 import {
   createUser,
   getAllUsers,
@@ -9,6 +16,8 @@ import {
   addFriend,
   deleteFriend,
 } from '../../controllers/userController.js';
+
+const router = Router();
 
 // /api/users
 router

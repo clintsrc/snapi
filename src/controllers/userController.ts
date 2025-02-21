@@ -116,7 +116,10 @@ export const getUserById = async (
  * @param object id, userId
  * @returns a single User object
  */
-export const updateUser = async (req: Request, res: Response): Promise<void> => {
+export const updateUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { userId } = req.params;
   const { username, email } = req.body;
 
@@ -142,11 +145,10 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updates,
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) {
       res.status(404).json({ message: 'User not found' });
@@ -291,7 +293,7 @@ export const deleteFriend = async (
 
     if (user) {
       console.info('DELETE deleteFriend called', friendId);
-      res.status(200).json(user)
+      res.status(200).json(user);
     } else {
       console.info('DELETE: PUT deleteFriend NOT FOUND', friendId);
       res.status(404).json({

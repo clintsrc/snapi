@@ -1,5 +1,12 @@
+/*
+ * Thought Routes
+ *
+ * Organize and manage the Thought routes
+ * Associates each supported CRUD route with the supporting controller function
+ *
+ */
+
 import { Router } from 'express';
-const router = Router();
 import {
   createThought,
   getAllThoughts,
@@ -9,6 +16,8 @@ import {
   addReaction,
   deleteReaction,
 } from '../../controllers/thoughtController.js';
+
+const router = Router();
 
 // /api/thoughts
 router

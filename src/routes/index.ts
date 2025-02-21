@@ -1,3 +1,10 @@
+/*
+ * API Routes index
+ *
+ * Organize and manage the routes
+ *
+ */
+
 import { Router } from 'express';
 import apiRoutes from './api/index.js';
 

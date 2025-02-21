@@ -1,7 +1,11 @@
 /*
  * User model
  *
+ * Defines interfaces, schemas, virtual functions, getters and setters
+ * Compiles the User model from the schema
+ *
  */
+
 import { Schema, Types, model, type Document } from 'mongoose';
 
 // Interfaces
@@ -52,7 +56,7 @@ const userSchema: Schema<IUser> = new Schema(
   },
   {
     toJSON: {
-      virtuals: true,
+      virtuals: true, // JSON output for virtual functions
     },
   }
 );
