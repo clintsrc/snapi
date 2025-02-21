@@ -52,7 +52,7 @@ const userSchema: Schema<IUser> = new Schema(
   },
   {
     toJSON: {
-      virtuals: true,
+      virtuals: true, // JSON output for virtual functions
     },
   }
 );

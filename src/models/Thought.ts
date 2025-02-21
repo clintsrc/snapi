@@ -4,7 +4,14 @@
  * (Also specifies the reaction subdocument schema)
  *
  */
-import { Schema, Types, model, type Document } from 'mongoose';
+import {
+  Schema,
+  Types,
+  model,
+  type Document,
+  SchemaTypeOptions,
+} from 'mongoose';
+import dayjs from 'dayjs';
 
 // Interfaces
 
@@ -41,7 +48,8 @@ const reactionSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    get: (value: Date) => value,
+    //get: (value: Date) => value,
+    get: (value: Date) => dayjs(value).format('YYYY-MMM-DD hh:mm:ss A'),
   },
 });
 
@@ -53,11 +61,19 @@ const thoughtSchema: Schema<IThought> = new Schema(
       minlength: 1,
       maxlength: 280,
     },
+    /* Handling the createdAt getter with strict TypeScript:
+      - Mongoose allows null dates, but dayjs cannot handle null values.
+      - Using `as unknown` temporarily bypasses strict type checking.
+      - Using `as SchemaTypeOptions<Date>` converts the object to Mongoose's 
+        SchemaTypeOptions<Date>.
+      Treating the string as a Date allows the getter to format it correctly. */
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (value: Date) => value,
-    },
+      get: function (value: Date | undefined): string {
+        return value ? dayjs(value).format('YYYY-MMM-DD hh:mm:ss A') : '';
+      },
+    } as unknown as SchemaTypeOptions<Date>,
     username: {
       type: String,
       required: true,
@@ -67,7 +83,8 @@ const thoughtSchema: Schema<IThought> = new Schema(
   },
   {
     toJSON: {
-      virtuals: true,
+      virtuals: true, // JSON output for virtual functions
+      getters: true, // JSON output for getters (timestamp formatting)
     },
   }
 );

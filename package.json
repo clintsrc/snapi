@@ -19,6 +19,7 @@
   "license": "ISC",
   "description": "Read your friends' thoughts, add them to a list and give them your opinion using Express.js, MongoDB, Mongoose ODM.",
   "dependencies": {
+    "dayjs": "^1.11.13",
     "express": "^4.21.2",
     "mongoose": "^8.10.1"
   },
