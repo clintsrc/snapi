@@ -145,37 +145,40 @@ export const updateThought = async (
   res: Response
 ): Promise<void> => {
   const { thoughtId } = req.params;
+  const { thoughtText } = req.body;
+
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      res.status(400).json({
-        message: `PUT updateThought: Invalid ObjectId format: ${thoughtId}`,
-      });
+      res
+        .status(400)
+        .json({ message: `Invalid ObjectId format: ${thoughtId}` });
       return;
     }
 
-    const thought = await Thought.findOneAndUpdate(
-      { _id: thoughtId }, // filter
-      { $set: req.body },
-      { runValidators: true, new: true } // run validation, return updated record
+    /* Don't change the poster's username and definitely not the reactions of 
+      of others */
+    if (!thoughtText) {
+      res
+        .status(400)
+        .json({ message: 'thoughtText is required to update the thought' });
+      return;
+    }
+
+    const updatedThought = await Thought.findByIdAndUpdate(
+      thoughtId,
+      { thoughtText },
+      { new: true, runValidators: true }
     );
 
-    if (thought) {
-      console.info('PUT updateThought called', thoughtId);
-      res.status(200).json(thought);
-    } else {
-      console.info('ERROR: PUT updateThought NOT FOUND', thoughtId);
-      res.status(404).json({
-        message: 'Thought not found',
-      });
+    if (!updatedThought) {
+      res.status(404).json({ message: 'Thought not found' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('ERROR: PUT updateThought', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('ERROR: PUT updateThought', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+
+    res.status(200).json(updatedThought);
+  } catch (error) {
+    console.error('ERROR: PUT updateThought', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -242,13 +245,18 @@ export const deleteThought = async (
  * @param object reaction
  * @returns object Thought
  */
-export const addReaction = async (req: Request, res: Response): Promise<void> => {
+export const addReaction = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { thoughtId } = req.params;
   const { reactionBody, username } = req.body;
 
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      res.status(400).json({ message: `Invalid ObjectId format: ${thoughtId}` });
+      res
+        .status(400)
+        .json({ message: `Invalid ObjectId format: ${thoughtId}` });
       return;
     }
 
@@ -267,9 +275,9 @@ export const addReaction = async (req: Request, res: Response): Promise<void> =>
           reactions: {
             reactionBody,
             username,
-            createdAt: new Date()
-          }
-        }
+            createdAt: new Date(),
+          },
+        },
       },
       { new: true, runValidators: true }
     );
@@ -285,7 +293,6 @@ export const addReaction = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: (error as Error).message });
   }
 };
-
 
 /*
  * Thought reaction routes:

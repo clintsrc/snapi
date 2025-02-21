@@ -116,35 +116,45 @@ export const getUserById = async (
  * @param object id, userId
  * @returns a single User object
  */
-export const updateUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
+  const { username, email } = req.body;
+
   try {
     if (!ObjectId.isValid(userId)) {
-      res.status(400).json({
-        message: `PUT updateUser: Invalid ObjectId format: ${userId}`,
-      });
+      res.status(400).json({ message: `Invalid ObjectId format: ${userId}` });
       return;
     }
 
-    const user = await User.findOneAndUpdate(
-      { _id: userId }, // filter
-      { $set: req.body }, // $set operator updates record with data included in the PUT body
-      { runValidators: true, new: true } // run validation, return updated record
+    /* Limit updates to username and email (use other routes to manage friends and 
+      thoughts appropriately */
+    const updates: { username?: string; email?: string } = {};
+    if (username) {
+      updates.username = username;
+    }
+    if (email) {
+      updates.email = email;
+    }
+
+    // No valid fields were specified
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ message: 'Invalid property inputs' });
+      return;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      { new: true, runValidators: true }
     );
 
-    if (user) {
-      console.info('PUT updateUser called', userId);
-      res.status(200).json(user);
-    } else {
-      console.info('ERROR: PUT updateUser NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
-      });
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
-  } catch (error: unknown) {
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
     console.error('ERROR: PUT updateUser', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
   }
