@@ -10,7 +10,7 @@
  *
  */
 
-import { User } from '../models/index.js';
+import { User, Thought } from '../models/index.js';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
@@ -84,17 +84,27 @@ export const getUserById = async (
       return;
     }
 
-    const user = await User.findById(userId);
-
-    if (user) {
-      console.info('GET getUserById called', userId);
-      res.status(200).json(user);
-    } else {
-      console.info('ERROR: GET getUserById NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
+    /* The populate calls pull in details of the records, otherwise only the
+      id references would be shown. It's more helpful here (detailed) rather than 
+      in the getAllUsers function (overview) */
+    const user = await User.findById(userId)
+      .populate({
+        path: 'thoughts',
+        model: Thought,
+      })
+      .populate({
+        path: 'friends',
+        model: User,
       });
+
+    if (!user) {
+      console.info('GET getUserById NOT FOUND', userId);
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
+
+    console.info('GET getUserById called', userId);
+    res.status(200).json(user);
   } catch (error: unknown) {
     console.error('ERROR: GET getUserById', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
@@ -106,35 +116,45 @@ export const getUserById = async (
  * @param object id, userId
  * @returns a single User object
  */
-export const updateUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
+  const { username, email } = req.body;
+
   try {
     if (!ObjectId.isValid(userId)) {
-      res.status(400).json({
-        message: `PUT updateUser: Invalid ObjectId format: ${userId}`,
-      });
+      res.status(400).json({ message: `Invalid ObjectId format: ${userId}` });
       return;
     }
 
-    const user = await User.findOneAndUpdate(
-      { _id: userId }, // filter
-      { $set: req.body }, // $set operator updates record with data included in the PUT body
-      { runValidators: true, new: true } // run validation, return updated record
+    /* Limit updates to username and email (use other routes to manage friends and 
+      thoughts appropriately */
+    const updates: { username?: string; email?: string } = {};
+    if (username) {
+      updates.username = username;
+    }
+    if (email) {
+      updates.email = email;
+    }
+
+    // No valid fields were specified
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ message: 'Invalid property inputs' });
+      return;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      { new: true, runValidators: true }
     );
 
-    if (user) {
-      console.info('PUT updateUser called', userId);
-      res.status(200).json(user);
-    } else {
-      console.info('ERROR: PUT updateUser NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
-      });
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
-  } catch (error: unknown) {
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
     console.error('ERROR: PUT updateUser', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
   }
@@ -145,12 +165,12 @@ export const updateUser = async (
  * @param string id
  * @returns string
  */
-// TODO: BONUS: Remove a user's associated thoughts when deleted.
 export const deleteUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { userId } = req.params;
+
   try {
     if (!ObjectId.isValid(userId)) {
       res.status(400).json({
@@ -159,17 +179,20 @@ export const deleteUser = async (
       return;
     }
 
+    // Find the user
     const user = await User.findOneAndDelete({ _id: userId });
 
-    if (user) {
-      console.info('DELETE deleteUser called', userId);
-      res.status(200).json({ message: 'User deleted' });
-    } else {
-      console.info('DELETE: PUT deleteUser NOT FOUND', userId);
-      res.status(404).json({
-        message: 'User not found',
-      });
+    if (!user) {
+      console.info('DELETE: DELETE deleteUser NOT FOUND', userId);
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
+
+    // Remove user's associated thoughts when deleted (BONUS)
+    await Thought.deleteMany({ username: user.username });
+
+    console.info('DELETE deleteUser called', userId);
+    res.status(200).json({ message: 'User and associated thoughts deleted' });
   } catch (error: unknown) {
     console.error('ERROR: DELETE deleteUser', (error as Error).message);
     res.status(500).json({ message: (error as Error).message });
@@ -268,7 +291,7 @@ export const deleteFriend = async (
 
     if (user) {
       console.info('DELETE deleteFriend called', friendId);
-      res.status(200).json({ message: 'Friend deleted' });
+      res.status(200).json(user)
     } else {
       console.info('DELETE: PUT deleteFriend NOT FOUND', friendId);
       res.status(404).json({

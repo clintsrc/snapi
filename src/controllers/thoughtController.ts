@@ -17,7 +17,7 @@
  *  /api/thoughts
  */
 
-import { Thought } from '../models/index.js';
+import { User, Thought } from '../models/index.js';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb'; // represents the mondodb '_id'
 
@@ -97,20 +97,41 @@ export const createThought = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const { thoughtText, username } = req.body;
+
   try {
-    const thought = await Thought.create(req.body);
+    if (!username || !thoughtText) {
+      res
+        .status(400)
+        .json({ message: 'Username and thoughtText are required.' });
+      return;
+    }
+
+    // Lookup the username to whom the thought will be attributed
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.status(404).json({ message: `User not found: ${username}` });
+      return;
+    }
+
+    const thought = await Thought.create({
+      thoughtText,
+      username,
+    });
+
+    // Add the thought id to the user's list of thoughts
+    user.thoughts.push(thought._id as ObjectId);
+    await user.save(); // Save the updated document
 
     console.info('POST createThought called');
-
-    res.status(200).json(thought);
+    res.status(201).json({
+      message: 'Thought created successfully!',
+      thought,
+      user, // Returning the updated user with the new thought linked
+    });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('ERROR: POST createThought', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('ERROR: POST createThought', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+    console.error('ERROR: POST createThought', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -124,37 +145,40 @@ export const updateThought = async (
   res: Response
 ): Promise<void> => {
   const { thoughtId } = req.params;
+  const { thoughtText } = req.body;
+
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      res.status(400).json({
-        message: `PUT updateThought: Invalid ObjectId format: ${thoughtId}`,
-      });
+      res
+        .status(400)
+        .json({ message: `Invalid ObjectId format: ${thoughtId}` });
       return;
     }
 
-    const thought = await Thought.findOneAndUpdate(
-      { _id: thoughtId }, // filter
-      { $set: req.body },
-      { runValidators: true, new: true } // run validation, return updated record
+    /* Don't change the poster's username and definitely not the reactions of 
+      of others */
+    if (!thoughtText) {
+      res
+        .status(400)
+        .json({ message: 'thoughtText is required to update the thought' });
+      return;
+    }
+
+    const updatedThought = await Thought.findByIdAndUpdate(
+      thoughtId,
+      { thoughtText },
+      { new: true, runValidators: true }
     );
 
-    if (thought) {
-      console.info('PUT updateThought called', thoughtId);
-      res.status(200).json(thought);
-    } else {
-      console.info('ERROR: PUT updateThought NOT FOUND', thoughtId);
-      res.status(404).json({
-        message: 'Thought not found',
-      });
+    if (!updatedThought) {
+      res.status(404).json({ message: 'Thought not found' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('ERROR: PUT updateThought', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('ERROR: PUT updateThought', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+
+    res.status(200).json(updatedThought);
+  } catch (error) {
+    console.error('ERROR: PUT updateThought', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -173,6 +197,7 @@ export const deleteThought = async (
   res: Response
 ): Promise<void> => {
   const { thoughtId } = req.params;
+
   try {
     if (!ObjectId.isValid(thoughtId)) {
       res.status(400).json({
@@ -183,15 +208,21 @@ export const deleteThought = async (
 
     const thought = await Thought.findOneAndDelete({ _id: thoughtId });
 
-    if (thought) {
-      console.info('DELETE deleteThought called', thoughtId);
-      res.status(200).json({ message: 'Thought deleted' });
-    } else {
+    if (!thought) {
       console.info('ERROR: DELETE deleteThought NOT FOUND', thoughtId);
-      res.status(404).json({
-        message: 'Thought not found',
-      });
+      res.status(404).json({ message: 'Thought not found' });
+      return;
     }
+
+    // Remove the thoughtId from the user's thoughts list
+    await User.findOneAndUpdate(
+      { username: thought.username }, // filter on the thought's username
+      { $pull: { thoughts: thoughtId } }, // remove thoughtId from the thoughts array
+      { new: true } // return the updated user document
+    );
+
+    console.info('DELETE deleteThought called', thoughtId);
+    res.status(200).json({ message: 'Thought deleted and removed from user' });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('ERROR: DELETE deleteThought', error.message);
@@ -219,35 +250,47 @@ export const addReaction = async (
   res: Response
 ): Promise<void> => {
   const { thoughtId } = req.params;
+  const { reactionBody, username } = req.body;
+
   try {
     if (!ObjectId.isValid(thoughtId)) {
-      res.status(400).json({
-        message: `POST addReaction: Invalid ObjectId format: ${thoughtId}`,
-      });
+      res
+        .status(400)
+        .json({ message: `Invalid ObjectId format: ${thoughtId}` });
       return;
     }
-    const thought = await Thought.findOneAndUpdate(
-      { _id: thoughtId }, // filter
-      { $addToSet: { reactions: req.body } }, // $addToSet operator adds a friend to the list but only if it's unique
-      { runValidators: true, new: true } // run validation, return updated record
+
+    // Ensure the user exists
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.status(404).json({ message: `User not found: ${username}` });
+      return;
+    }
+
+    // Find the thought and add the reaction
+    const updatedThought = await Thought.findByIdAndUpdate(
+      thoughtId,
+      {
+        $push: {
+          reactions: {
+            reactionBody,
+            username,
+            createdAt: new Date(),
+          },
+        },
+      },
+      { new: true, runValidators: true }
     );
-    if (thought) {
-      console.info('POST addReaction called');
-      res.status(200).json(thought);
-    } else {
-      console.info('POST: addReaction NOT FOUND', thoughtId);
-      res.status(404).json({
-        message: 'Thought not found',
-      });
+
+    if (!updatedThought) {
+      res.status(404).json({ message: 'Thought not found' });
+      return;
     }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('ERROR: POST addReaction', error.message);
-      res.status(500).json({ message: error.message });
-    } else {
-      console.error('ERROR: POST addReaction', error);
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
+
+    res.status(200).json(updatedThought);
+  } catch (error) {
+    console.error('ERROR: POST addReaction', (error as Error).message);
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -289,7 +332,7 @@ export const deleteReaction = async (
     );
     if (thought) {
       console.info('DELETE deleteReaction called', reactionId);
-      res.status(200).json({ message: 'Thought deleted' });
+      res.status(200).json(thought);
     } else {
       console.info('ERROR: DELETE deleteReaction NOT FOUND', reactionId);
       res.status(404).json({
