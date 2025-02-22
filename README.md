@@ -47,7 +47,7 @@ Thank you for your contributions!
 ## Tests
 
 Test instructions:  
-1. Add to the existing HTTP requests in the Insomnia configuration.  
+1. Add to the existing HTTP requests in the [Insomnia test](Assets/test/Insomnia_snapi.json) configuration.  
 2. Test any new CRUD routes you add and execute the existing suite. Pay particular attention to any existing routes that would be effected by your changes.
 
 ## Questions
